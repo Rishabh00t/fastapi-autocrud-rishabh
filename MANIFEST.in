@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include fastapi_autocrud_rishabh *.py
