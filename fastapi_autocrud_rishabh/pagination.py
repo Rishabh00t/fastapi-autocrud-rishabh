@@ -15,6 +15,8 @@ class PaginatedResponse(BaseModel, Generic[T]):
     
     class Config:
         arbitrary_types_allowed = True
+        # Pydantic v2 compatibility
+        from_attributes = True
 
 
 class PaginationParams:

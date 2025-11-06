@@ -1,9 +1,6 @@
-"""Pytest configuration and fixtures"""
-
 import pytest
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
@@ -52,6 +49,8 @@ class UserRead(BaseModel):
     
     class Config:
         from_attributes = True
+        # Pydantic v2 compatibility
+        orm_mode = True
 
 
 @pytest.fixture(scope="function")

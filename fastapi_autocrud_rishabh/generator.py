@@ -45,13 +45,20 @@ class CRUDGenerator:
             
             try:
                 # Create model instance from schema
-                db_item = self.model(**item.dict())
+                # Support both Pydantic v1 and v2
+                if hasattr(item, 'model_dump'):
+                    db_item = self.model(**item.model_dump())
+                else:
+                    db_item = self.model(**item.dict())
                 db.add(db_item)
                 db.commit()
                 db.refresh(db_item)
                 
-                # Return as read schema
-                return self.read_schema.from_orm(db_item)
+                # Return as read schema - support both Pydantic v1 and v2
+                if hasattr(self.read_schema, 'model_validate'):
+                    return self.read_schema.model_validate(db_item)
+                else:
+                    return self.read_schema.from_orm(db_item)
             except Exception as e:
                 db.rollback()
                 raise DatabaseException(detail=f"Failed to create item: {str(e)}")
@@ -96,8 +103,11 @@ class CRUDGenerator:
                 # Execute query
                 items = query.all()
                 
-                # Convert to read schema
-                items_data = [self.read_schema.from_orm(item) for item in items]
+                # Convert to read schema - support both Pydantic v1 and v2
+                if hasattr(self.read_schema, 'model_validate'):
+                    items_data = [self.read_schema.model_validate(item) for item in items]
+                else:
+                    items_data = [self.read_schema.from_orm(item) for item in items]
                 
                 return PaginatedResponse(
                     items=items_data,
@@ -131,7 +141,11 @@ class CRUDGenerator:
                         detail=f"{self.model.__name__} with id {item_id} not found"
                     )
                 
-                return self.read_schema.from_orm(item)
+                # Support both Pydantic v1 and v2
+                if hasattr(self.read_schema, 'model_validate'):
+                    return self.read_schema.model_validate(item)
+                else:
+                    return self.read_schema.from_orm(item)
             except ItemNotFoundException:
                 raise
             except Exception as e:
@@ -161,15 +175,22 @@ class CRUDGenerator:
                         detail=f"{self.model.__name__} with id {item_id} not found"
                     )
                 
-                # Update fields
-                update_data = item.dict(exclude_unset=True)
+                # Update fields - support both Pydantic v1 and v2
+                if hasattr(item, 'model_dump'):
+                    update_data = item.model_dump(exclude_unset=True)
+                else:
+                    update_data = item.dict(exclude_unset=True)
                 for field, value in update_data.items():
                     setattr(db_item, field, value)
                 
                 db.commit()
                 db.refresh(db_item)
                 
-                return self.read_schema.from_orm(db_item)
+                # Support both Pydantic v1 and v2
+                if hasattr(self.read_schema, 'model_validate'):
+                    return self.read_schema.model_validate(db_item)
+                else:
+                    return self.read_schema.from_orm(db_item)
             except ItemNotFoundException:
                 raise
             except Exception as e:

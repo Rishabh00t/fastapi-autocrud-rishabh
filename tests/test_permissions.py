@@ -116,16 +116,43 @@ def test_user_cannot_update(app_with_permissions, sample_users):
     assert response.status_code == 403
 
 
-def test_all_roles_can_read(app_with_permissions, sample_users):
+def test_all_roles_can_read(sample_users, get_db):
     """Test all roles can read (no permission restriction)"""
-    client = TestClient(app_with_permissions)
+    from fastapi_autocrud_rishabh import AutoCRUDRouter
     
+    # Test each role in separate app instances
     for role in ["admin", "staff", "user"]:
-        @app_with_permissions.middleware("http")
+        app = FastAPI()
+        
+        def get_user_role(request: Request):
+            if hasattr(request.state, "user"):
+                return request.state.user.role
+            return None
+        
+        user_router = AutoCRUDRouter(
+            model=User,
+            create_schema=UserCreate,
+            read_schema=UserRead,
+            update_schema=UserUpdate,
+            db_session=get_db,
+            prefix="/users",
+            roles={
+                "delete": ["admin"],
+                "update": ["admin", "staff"],
+                "create": ["admin", "staff", "user"],
+            },
+            user_role_getter=get_user_role
+        )
+        
+        app.include_router(user_router.router)
+        
+        # Add middleware before creating client
+        @app.middleware("http")
         async def add_user(request: Request, call_next):
             request.state.user = MockUser(role=role)
             response = await call_next(request)
             return response
         
+        client = TestClient(app)
         response = client.get("/users/")
         assert response.status_code == 200

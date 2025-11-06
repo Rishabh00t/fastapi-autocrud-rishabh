@@ -57,10 +57,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/fastapi-autocrud-rishabh"
-Documentation = "https://github.com/yourusername/fastapi-autocrud-rishabh#readme"
-Repository = "https://github.com/yourusername/fastapi-autocrud-rishabh"
-Issues = "https://github.com/yourusername/fastapi-autocrud-rishabh/issues"
+Homepage = "https://github.com/Rishabh00t/fastapi-autocrud-rishabh"
+Documentation = "https://github.com/Rishabh00t/fastapi-autocrud-rishabh#readme"
+Repository = "https://github.com/Rishabh00t/fastapi-autocrud-rishabh"
+Issues = "https://github.com/Rishabh00t/fastapi-autocrud-rishabh/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
